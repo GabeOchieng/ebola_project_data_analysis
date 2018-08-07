@@ -18,7 +18,7 @@ for i, row in enumerate(data_mtx):
             plt.title("Path from " + str(i) + ' to ' + str(j))
             plt.xlabel("Seconds")
             plt.ylabel("Number of runs")
-            legends.append(str(i) + ' ' + str(j))
+            # legends.append(str(i) + ' ' + str(j))
             plt.legend(legends, loc=5)
             plt.show()
         elif len(data):
