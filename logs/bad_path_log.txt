@@ -32,3 +32,8 @@ Invalid path from 27 to 20, count: 30
 Invalid path from 28 to 28, count: 1
 Invalid path from 29 to 28, count: 1
 Invalid path from 29 to 29, count: 1
+Invalid path from 1 to 12, count: 2
+Invalid path from 2 to 3, count: 13
+Invalid path from 3 to 2, count: 12
+Invalid path from 4 to 4, count: 1
+Invalid path from 8 to 22, count: 4

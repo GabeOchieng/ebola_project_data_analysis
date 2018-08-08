@@ -6,6 +6,6 @@ eog reduced_graph.png &
 rm -r gif_imgs/*
 ./voronoi_expansion.py
 ./make_gif.py
-./pathfinder7.py
+./pathfinder8.py
 ./histogram.py
 
