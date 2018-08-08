@@ -19,8 +19,8 @@ for i, row in enumerate(data_mtx):
             plt.xlabel("Seconds")
             plt.ylabel("Number of runs")
             # legends.append(str(i) + ' ' + str(j))
-            plt.legend(legends, loc=5)
-            plt.show()
+            # plt.legend(legends, loc=5)
+            # plt.show()
         elif len(data):
             logfile.write("Invalid path from " + str(i) + ' to ' + str(j) + ', count: ' + str(len(data)) + '\n')
-# plt.show()
+plt.show()
