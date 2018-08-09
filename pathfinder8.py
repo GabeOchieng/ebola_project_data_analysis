@@ -3,7 +3,6 @@
 #General Packages
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
 
 #Packages to make life easier
 import os
