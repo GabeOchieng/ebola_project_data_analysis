@@ -27,9 +27,17 @@ def interpolate_data(last_pt, pt, res, origin, num_pts):
 
     x = np.linspace(last_x_coord, x_coord, num_pts)
     if x_coord-last_x_coord != 0:
+        #If this moves laterally, we can make a slope and generate y data
         m = -(y_coord - last_y_coord)/(x_coord - last_x_coord)
     else:
-        return [(x_coord, y_coord)]*num_pts
+        if y_coord-last_y_coord == 0:
+            #If there is no delta x and no delta y, this is just all one point
+            return [(x_coord, y_coord)]*num_pts
+        else:
+            #Otherwise this is a vertical line, so we need to interpolate
+            #   between the y points
+            y = np.linspace(last_y_coord, y_coord, num_pts)
+            return list(zip(x.astype(int), y.astype(int)))
     y = -np.subtract(m*np.subtract(x, last_x_coord), last_y_coord).astype(int)
 
     return list(zip(x.astype(int), y))
