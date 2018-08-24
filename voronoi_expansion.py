@@ -84,6 +84,7 @@ if __name__ == "__main__":
     node_pts = node_data[:,0].tolist()
 
     I = Image.open(path+'map.pgm')
+    # I = Image.open(path+'costmap.pgm')
     w, h = I.size
     p = np.asarray(I).astype('int')
     mask = np.asarray([[-2]*len(p[0])]*len(p))
@@ -93,10 +94,13 @@ if __name__ == "__main__":
     for i in trange(len(p), position=0):
         for j in range(len(p[i])):
             if p[i][j] == 254:
+            # if p[i][j] <= 0:
                 #-1 is unassigned
                 mask[i][j] = -1
                 openpts += 1
 
+    # plt.imshow(p, cmap=plt.cm.gray, interpolation='nearest')
+    # plt.show()
     mask = method(node_pts, mask, openpts)
 
     plt.imsave('voronoi_expansion_mask.png', mask, cmap=cm.nipy_spectral)

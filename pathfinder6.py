@@ -42,9 +42,23 @@ def find_first_change(node_id, prev_changes):
         if line[1]== node_id and line[0] != 0:
             return prev_changes[i][0]
 
+def show_path(pts, lastnode, node, mask, node_pts):
+    fig = plt.figure()
+    plt.ylim(2300, 1790)
+    plt.xlim(1620, 2300)
+    implot = plt.imshow(mask, cmap=plt.cm.nipy_spectral, Animated=True)
+
+    for pt in pts:
+        plt.scatter(pt[0], pt[1], c='b', marker='.')
+
+    plt.scatter(node_pts[node][1],node_pts[node][0], c='g')
+    plt.scatter(node_pts[lastnode][1],node_pts[lastnode][0], c='g')
+
+    plt.show()
+
 if __name__ == "__main__":
     path = os.getcwd() + '/'
-    data_path = path + 'etu_1_condensed/'#bed_10_table_2.p'
+    data_path = path + 'etu_1_condensed/'#courtyard_0_bed_0.p'
     # data_path = path + 'etu_1_condensed/test/'
 
     step = 1
@@ -72,7 +86,7 @@ if __name__ == "__main__":
     #generate matrix for data
     data_mtx = [[[] for k in range(len(node_pts))] for i in range(len(node_pts))]
 
-    tqdm.write("Getting path data")
+    #tqdm.write("Getting path data")
     for file in tqdm(files, position = 0):
         dataset = pickle.load(open(file, 'rb'))
 
@@ -81,7 +95,7 @@ if __name__ == "__main__":
 
         for trial in dataset:
             if trial[1] > 1000 or trial[0] == 4:
-                tqdm.write("bad trial " + str(file))
+                # #tqdm.write("bad trial " + str(file))
                 continue
 
             #Generate num_pts in between each pair of points in a given trial
@@ -114,6 +128,9 @@ if __name__ == "__main__":
             prev_changes = []
             prev_node_reg = -1
             zone_path = []
+            started_in_zone = False
+
+            pt_list = []
 
             for point in interpolated_data:
                 #unpack points
@@ -125,9 +142,10 @@ if __name__ == "__main__":
                 if node_id not in zone_path:
                     zone_path.append(node_id)
 
-                # tqdm.write(str((x_coord, y_coord)) + ' ' + str(dist))
+                #tqdm.write(str((x_coord, y_coord)) + ' ' + str(dist))
                 time +=1
 
+                pt_list.append((x_coord, y_coord))
                 # plt.scatter([x_coord], [y_coord], c='b', marker='.')
                 # plt.scatter(node_pts[node_id][1],node_pts[node_id][0], c='g')
                 # plt.pause(.001)
@@ -135,19 +153,25 @@ if __name__ == "__main__":
 
                 if node_id < 0:
                     #Outside of marked area
+                    #tqdm.write("outside of marked area")
                     continue
 
                 if type(last_dist) is list:
                     #On first run, just set last_dist and last_node_id
                     #   the type is used because we care about when last_dist = 0
-                    # tqdm.write("First run in zone")
+                    # #tqdm.write("First run in zone")
                     last_dist = dist
                     last_node_id = node_id
+
+                    if dist < 20:
+                        started_in_zone = True
+                        time_before_zone = time
+                        #tqdm.write("starting in range " +str(started_in_zone) + ' ' + str(time_before_zone))
                     continue
 
                 if node_id != last_node_id:
                     #If we've moved to a new zone, we need to reset our distances
-                    # tqdm.write("new zone")
+                    # #tqdm.write("new zone")
                     last_dist = []
                     last_dist_change = False
                     last_node_id = node_id
@@ -163,11 +187,11 @@ if __name__ == "__main__":
                     # We only need to keep non-zero changes
                     prev_changes.append(dist_change)
 
-                # tqdm.write(str(node_id) + ' ' +str(dist_change))
+                #tqdm.write(str(node_id) + ' ' +str(dist_change))
 
                 if last_dist_change == False:
                     #if last_dist_change hasn't been set, then it should
-                    # tqdm.write("last_dist_change is 0")
+                    # #tqdm.write("last_dist_change is 0")
                     #   be initialized
                     last_dist = dist
                     last_dist_change = dist_change
@@ -177,34 +201,63 @@ if __name__ == "__main__":
                 if len(prev_changes) < 2:
                     #Not enough data for a valid window, so we don't want to do
                     #   any checks for nodes
-                    # tqdm.write("not enough data to make determination")
+                    # #tqdm.write("not enough data to make determination")
                     continue
 
-                # tqdm.write(str(prev_changes))
+                #tqdm.write(str(prev_changes))
+
+                if (started_in_zone and prev_changes[-2] >= 0 and prev_changes[-1] >= 0):
+                    if prev_node_reg != -1:
+                        #This means our closest approach was when we entered the
+                        #   zone
+                        #tqdm.write("Found node at beginning of zone")
+                        #tqdm.write(str(prev_node_reg) + ' ' + str(node_id) + ' ' + str((time_before_zone)/num_pts))
+
+                        data_mtx[prev_node_reg][node_id].append((time_before_zone)/num_pts)
+                        time -= time_before_zone
+                        prev_node_reg = node_id
+                        started_in_zone = False
+                        # plt.waitforbuttonpress()
+                    else:
+                        #This means we started near a node
+                        #tqdm.write("Found first node")
+                        # plt.waitforbuttonpress()
+                        prev_node_reg = node_id
+                        time = 2/num_pts
+                        started_in_zone = False
+
                 if dist < 20:
                     #Only check for node if you're within 20 px
+
                     if prev_changes[-2] <= 0 and prev_changes[-1] >= 0:
                         if prev_node_reg == -1:
                             #This is the first inflection point, so we can just start
                             #   timing
-                            # tqdm.write("Found first node")
+                            #tqdm.write("Found first node")
                             # plt.waitforbuttonpress()
                             time = 0
                             prev_node_reg = node_id
-                            #
+                            started_in_zone = False
+
                             # last_dist = dist
                             # last_dist_change = dist_change
                             # last_node_id = node_id
                             # continue
                         elif node_id != prev_node_reg:
-                            # tqdm.write("Found inflection")
-                            # tqdm.write(str(prev_changes[-2]) + ' ' + str(prev_changes[-1]))
-                            # tqdm.write(str(prev_node_reg) + ' ' + str(node_id) + ' ' + str(time/num_pts))
+                            #tqdm.write("Found inflection")
+                            #tqdm.write(str(prev_changes[-2]) + ' ' + str(prev_changes[-1]))
+                            #tqdm.write(str(prev_node_reg) + ' ' + str(node_id) + ' ' + str(time/num_pts))
                             # plt.waitforbuttonpress()
+                            # if prev_node_reg == 11 and node_id == 12:
+                            #     tqdm.write(file)
+                            #     show_path(pt_list, prev_node_reg, node_id, voronoi_mask, node_pts)
                             data_mtx[prev_node_reg][node_id].append(time/num_pts)
                             time = 0
                             prev_node_reg = node_id
+                            started_in_zone = False
 
                 last_dist = dist
                 last_dist_change = dist_change
                 last_node_id = node_id
+
+    np.save('time_data', data_mtx)
