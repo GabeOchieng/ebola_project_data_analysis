@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 #Packages to make life easier
 import os
+from tqdm import tqdm
 
 
 def find_adjacent(pt, skeleton):
@@ -219,8 +220,12 @@ if __name__ == "__main__":
     node_pts_new = [row[3] for row in node_connection_list]
     np.save('node_pts_new', node_pts_new)
     skel_pts = np.load('skel_pts.npy')
-    plt.scatter(*zip(*skel_pts), marker='.')
-    plt.scatter(*zip(*node_pts_new), s=45, marker='x', c='red')
+
+    for row in tqdm(skel_pts):
+        plt.scatter(row[1], row[0], marker='.', c='blue')
+    for row in node_pts_new:
+        plt.scatter(row[1], row[0], s=45, marker='x',c='red')
+    plt.gca().invert_yaxis()
     for i in range(len(node_connection_list)):
-        plt.annotate(str(i), node_data[i][0])
+        plt.annotate(str(i), (node_data[i][0][1],node_data[i][0][0]))
     plt.savefig("reduced_graph.png", dpi = 300)
