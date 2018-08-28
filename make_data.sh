@@ -8,4 +8,3 @@ rm -r gif_imgs/*
 ./make_gif.py
 ./pathfinder8.py
 ./histogram.py
-
